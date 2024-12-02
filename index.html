@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monthly Visitor Projection</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>売上目標計算ツール</h1>
+      <div class="inputs">
+        <label for="yearMonth">年月 (yymm):</label>
+        <input type="text" id="yearMonth" placeholder="例 : 2409" />
+
+        <label for="targetSales">売上計画:</label>
+        <input type="number" id="targetSales" placeholder="例 : 3,000,000" />
+
+        <label for="closedDates">営業無い日:</label>
+        <input type="text" id="closedDates" placeholder="例 : 6,13,20,27" />
+      </div>
+      <button id="calculate">計算</button>
+      <button id="generateCsv">ダウンロード</button>
+
+      <div id="outputTable"></div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>

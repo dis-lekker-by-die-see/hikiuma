@@ -12,7 +12,12 @@
       <h1>売上目標計算ツール</h1>
       <div class="inputs">
         <label for="yearMonth">年月 (yymm):</label>
-        <input type="text" id="yearMonth" placeholder="例 : 2409" />
+        <input
+          type="text"
+          id="yearMonth"
+          placeholder="例 : 2409"
+          pattern="\d{4}"
+        />
 
         <label for="targetSales">売上計画:</label>
         <input type="number" id="targetSales" placeholder="例 : 3,000,000" />

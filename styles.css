@@ -58,7 +58,7 @@ button:hover {
 table {
   width: 100%;
   border-collapse: collapse;
-  background-color: #fb6304;
+  background-color: rgb(255, 230, 220);
   color: #141c5c;
 }
 

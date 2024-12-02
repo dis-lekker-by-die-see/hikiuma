@@ -2201,8 +2201,15 @@ document.addEventListener("DOMContentLoaded", (event) => {
     2022: "220502",
     2023: "230501",
     2024: "240429",
+    2025: "250428",
+    2026: "260504",
+    2027: "270503",
+    2028: "280501",
+    2029: "290430",
+    2030: "300429",
   };
   const japaneseDays = ["日", "月", "火", "水", "木", "金", "土"];
+
   let factor = 1;
   const tolerance = 0.001;
 
@@ -2224,6 +2231,10 @@ document.addEventListener("DOMContentLoaded", (event) => {
           isCount: isCount.trim() === "1" ? 1 : 0,
         };
       });
+  };
+
+  const isLeapYear = (year) => {
+    return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
   };
 
   const calculate52WeekStructure = (row, goldenWeekStarts) => {
@@ -2261,10 +2272,18 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   // Helper function to validate input
-  function validateInput(inputId, isNumberRequired) {
+  // function validateInput(inputId, isNumberRequired) {
+  //   const inputElement = document.getElementById(inputId);
+  //   let value = inputElement.value.trim();
+  function validateInput(inputId, isNumberRequired, lengthRequired = 0) {
     const inputElement = document.getElementById(inputId);
     let value = inputElement.value.trim();
 
+    if (lengthRequired && value.length !== lengthRequired) {
+      inputElement.value = "";
+      inputElement.focus();
+      return false;
+    }
     if (isNumberRequired && (value === "" || isNaN(Number(value)))) {
       inputElement.value = "";
       inputElement.focus();
@@ -2274,32 +2293,12 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   function calculate() {
-    // if (
-    //   !validateInput("yearMonth", true) ||
-    //   !validateInput("targetSales", true)
-    // ) {
-    //   alert("年月または目標売上高が無効です。入力してください。");
-    //   return;
-    // }
-
-    // let yearMonth = document.getElementById("yearMonth").value;
-    // let targetSales = parseInt(document.getElementById("targetSales").value);
-    // let closedDates = document
-    //   .getElementById("closedDates")
-    //   .value.split(",")
-    //   .map(Number);
-
-    // // Validate closedDates
-    // if (!closedDates.every((date) => !isNaN(Number(date)))) {
-    //   document.getElementById("closedDates").value = "";
-    //   document.getElementById("closedDates").focus();
-    //   alert("閉店日が無効です。数字で入力してください。");
-    //   return;
-    // }
+    console.log("Calculate function started");
 
     let invalidInputs = [];
 
-    if (!validateInput("yearMonth", true)) invalidInputs.push("年月");
+    // if (!validateInput("yearMonth", true)) invalidInputs.push("年月");
+    if (!validateInput("yearMonth", true, 4)) invalidInputs.push("年月");
     if (!validateInput("targetSales", true)) invalidInputs.push("目標売上高");
 
     let closedDates = document
@@ -2330,8 +2329,33 @@ document.addEventListener("DOMContentLoaded", (event) => {
     let analyzeYear = 2000 + parseInt(yearMonth.slice(0, 2));
     let analyzeMonth = parseInt(yearMonth.slice(2, 4));
 
+    // Check if yearMonth is smaller than the first entry
+    let firstDataEntry = visitorData.trim().split("\n")[0].split(",")[1];
+    console.log(firstDataEntry);
+    let [firstYear, firstMonth, firstDay] = firstDataEntry
+      .match(/.{2}/g)
+      .map(Number);
+
+    let firstEntryYear = 2000 + (firstYear + 0);
+    // let firstEntryMonth = firstDay; // Here, firstDay is actually the month in this context
+    let firstEntryMonth = firstMonth; // Here, firstDay is actually the month in this context
+
+    console.log(analyzeYear, analyzeMonth);
+    console.log(firstEntryYear, firstEntryMonth);
+
+    if (
+      analyzeYear < firstEntryYear ||
+      (analyzeYear === firstEntryYear && analyzeMonth < firstEntryMonth)
+    ) {
+      invalidInputs.push("年月");
+      document.getElementById("yearMonth").value = "";
+      document.getElementById("yearMonth").focus();
+      return;
+    }
+
     if (!goldenWeekStarts[analyzeYear]) {
       // alert(`Golden Week start date for year ${analyzeYear} is not defined.`);
+      document.getElementById("yearMonth").value = "";
       document.getElementById("yearMonth").focus();
       return;
     }

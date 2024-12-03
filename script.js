@@ -2211,7 +2211,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
   const japaneseDays = ["日", "月", "火", "水", "木", "金", "土"];
 
   let factor = 1;
-  const tolerance = 0.001;
+  const tolerance = 0.005;
 
   const calculateDate = (dateStr) => {
     let [year, month, day] = dateStr.match(/.{2}/g).map(Number);

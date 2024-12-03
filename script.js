@@ -2378,14 +2378,19 @@ document.addEventListener("DOMContentLoaded", (event) => {
     if (!validateInput("yearMonth", true, 4)) invalidInputs.push("年月");
     if (!validateInput("targetSales", true)) invalidInputs.push("目標売上高");
 
-    let closedDates = document
-      .getElementById("closedDates")
-      .value.split(",")
-      .map(Number);
-    if (!closedDates.every((date) => !isNaN(date))) {
+    let closedDatesInput = document.getElementById("closedDates").value.trim();
+    // console.log("closedDatesInput: ", closedDatesInput);
+    // Convert input into an array of numbers and filter invalid values
+    let closedDates = closedDatesInput
+      .split(",")
+      .map((day) => parseInt(day.trim()))
+      .filter((day) => !isNaN(day) && day > 0 && day <= 31); // Valid days between 1 and 31
+
+    if (closedDates.length === 0 && closedDatesInput !== "") {
       document.getElementById("closedDates").value = "";
       invalidInputs.push("営業無い日");
     }
+    // console.log("closedDates: ", closedDates);
 
     if (invalidInputs.length > 0) {
       alert(
@@ -2435,6 +2440,16 @@ document.addEventListener("DOMContentLoaded", (event) => {
       return;
     }
 
+    // Convert closedDates into yymmdd format for the given yearMonth
+    let closedDatesYYMMDD = closedDates.map((day) => {
+      // Ensure day is always 2 digits
+      let dayString = day.toString().padStart(2, "0");
+      return `${yearMonth}${dayString}`; // Combine yearMonth with day
+    });
+
+    closedDates = closedDatesYYMMDD;
+    // console.log("closedDates: ", closedDates);
+
     let data = parseData(visitorData);
     let mainList = generateMainList(goldenWeekStarts);
     mainList = populateMainList(mainList, data);
@@ -2442,7 +2457,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
     let averages = calculateAveragesForMonth(mainList, yearMonth);
 
     // Existing sales calculation logic stays intact
-    let factor = 1;
+    // let factor = 1;
     let maxIterations = 10000; // Safety limit
     let iterationCount = 0;
 
@@ -2451,58 +2466,48 @@ document.addEventListener("DOMContentLoaded", (event) => {
         let newVisitors = Math.round(
           averages[dateStr].averageVisitors * factor
         );
-        // console.log("newVisitors: ", newVisitors);
-        let date = new Date(dateStr);
-        // console.log("date = new Date(dateStr) :", date);
-        if (closedDates.includes(date.getDate())) newVisitors = 0;
-        // console.log(
-        //   "sum + newVisitors * pricePerVisitor :",
-        //   sum + newVisitors * pricePerVisitor
-        // );
+        if (closedDates.includes(dateStr)) {
+          newVisitors = 0;
+          // console.log("Date found: ", dateStr);
+        }
         return sum + newVisitors * pricePerVisitor;
       }, 0);
-      // console.log("totalSales :", totalSales);
+
+      // If total sales exceed targetSales, exit the loop
       if (totalSales > targetSales) break;
 
+      // Increment the factor for the next iteration
       factor += tolerance;
       iterationCount++;
-      // console.log("Factor: ", factor, " Iteration: ", iterationCount);
 
+      // Prevent infinite loop
       if (iterationCount >= maxIterations) {
         alert("Could not achieve the target sales with the given data.");
         break;
       }
     }
 
+    // console.log("factor: ", factor);
     let tableContent = `<table><tr><th>曜日</th><th>年月日</th><th>平均 (過去)</th><th>平均 (計画)</th><th>売上目標高</th></tr>`;
     let totals = { pastVisitors: 0, pastSales: 0, newVisitors: 0, newSales: 0 };
 
     for (let dateStr in averages) {
       let row = averages[dateStr];
-      let date = parseYYMMDD(dateStr); // Use the parsing function
-
-      let formattedDate = date
-        .toLocaleDateString("ja-JP", {
-          year: "2-digit",
-          month: "2-digit",
-          day: "2-digit",
-        })
-        .replace(/\//g, ""); // Ensure the date matches the expected format
-
       let pastVisitors = row.averageVisitors;
-
-      let newVisitors = closedDates.includes(date.getDate())
+      let newVisitors = closedDates.includes(dateStr)
         ? 0
         : Math.round(row.averageVisitors * factor);
+
       let newSales = newVisitors * pricePerVisitor;
 
       totals.pastVisitors += pastVisitors;
       totals.newVisitors += newVisitors;
       totals.newSales += newSales;
 
+      // <td>${formattedDate}</td>
       tableContent += `<tr>
-                      <td>${japaneseDays[date.getDay()]}</td>
-                      <td>${formattedDate}</td>
+                      <td>${japaneseDays[parseYYMMDD(dateStr).getDay()]}</td>
+                      <td>${dateStr}</td>
                       <td>${pastVisitors}</td>
                       <td>${newVisitors}</td>
                       <td>¥${newSales.toLocaleString()}</td>
@@ -2529,19 +2534,13 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
     for (let dateStr in averages) {
       let row = averages[dateStr];
-      let date = parseYYMMDD(dateStr); // Ensure consistent date parsing
-      let formattedDate = date
-        .toLocaleDateString("ja-JP", {
-          year: "2-digit",
-          month: "2-digit",
-          day: "2-digit",
-        })
-        .replace(/\//g, ""); // Match the yymmdd format used in the table
-
       let pastVisitors = row.averageVisitors;
-      let newVisitors = closedDates.includes(date.getDate())
+
+      // Use the same logic for newVisitors and newSales as in the table
+      let newVisitors = closedDates.includes(dateStr)
         ? 0
         : Math.round(row.averageVisitors * factor);
+
       let newSales = newVisitors * pricePerVisitor;
 
       totals.pastVisitors += pastVisitors;
@@ -2549,8 +2548,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
       totals.newSales += newSales;
 
       csvContent += `"${
-        japaneseDays[date.getDay()]
-      }",${formattedDate},${pastVisitors},${newVisitors},${newSales}\n`;
+        japaneseDays[parseYYMMDD(dateStr).getDay()]
+      }",${dateStr},${pastVisitors},${newVisitors},${newSales}\n`;
     }
 
     csvContent += `"合計",,"${totals.pastVisitors}","${

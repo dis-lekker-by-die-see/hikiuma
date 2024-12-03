@@ -12,7 +12,7 @@ body {
   padding: 1em;
   background-color: #1f2a73;
   border-radius: 8px;
-  margin-bottom: 160px; /* Add margin to avoid overlap with the fixed logo */
+  margin-bottom: 25px; /* Add margin to avoid overlap with the fixed logo */
 }
 
 h1 {

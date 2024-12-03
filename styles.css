@@ -12,6 +12,7 @@ body {
   padding: 1em;
   background-color: #1f2a73;
   border-radius: 8px;
+  margin-bottom: 160px; /* Add margin to avoid overlap with the fixed logo */
 }
 
 h1 {
@@ -71,4 +72,20 @@ td {
 
 th {
   background-color: #ffa34d;
+}
+
+/* Styling for the logo at the bottom */
+.bottom-logo {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: -1;
+  margin-bottom: 20px;
+}
+
+.bottom-logo img {
+  width: 100px; /* Adjust size as needed */
+  height: auto;
 }

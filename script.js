@@ -2309,7 +2309,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
       }
     });
 
-    console.log("Updated mainList:", mainList); // Debugging output
+    // console.log("Updated mainList:", mainList); // Debugging output
     return mainList;
   }
 
@@ -2325,16 +2325,16 @@ document.addEventListener("DOMContentLoaded", (event) => {
         (item) =>
           item.dayNumber === targetDay.dayNumber && item.date < targetDay.date
       );
-      console.log(matchingDays);
+      // console.log(matchingDays);
       // Separate valid counts (isCount === 1) for proper averaging
       let validDays = matchingDays.filter((day) => day.isCount === 1);
-      console.log(validDays);
+      // console.log(validDays);
       let totalVisitors = matchingDays.reduce(
         (sum, day) => sum + day.visitors,
         0
       );
       let validCount = validDays.length;
-      console.log(validCount);
+      // console.log(validCount);
 
       // Calculate the average based on valid days only
       let averageVisitors =
@@ -2347,7 +2347,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
       };
     });
 
-    console.log("Averages:", averages); // Debugging output
+    // console.log("Averages:", averages); // Debugging output
     return averages;
   }
 
@@ -2408,7 +2408,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
     // Check if yearMonth is smaller than the first entry
     let firstDataEntry = visitorData.trim().split("\n")[0].split(",")[1];
-    console.log(firstDataEntry);
+    // console.log(firstDataEntry);
     let [firstYear, firstMonth, firstDay] = firstDataEntry
       .match(/.{2}/g)
       .map(Number);
@@ -2416,8 +2416,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
     let firstEntryYear = 2000 + (firstYear + 0);
     let firstEntryMonth = firstMonth;
 
-    console.log(analyzeYear, analyzeMonth);
-    console.log(firstEntryYear, firstEntryMonth);
+    // console.log(analyzeYear, analyzeMonth);
+    // console.log(firstEntryYear, firstEntryMonth);
 
     if (
       analyzeYear < firstEntryYear ||

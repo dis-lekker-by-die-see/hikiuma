@@ -2193,6 +2193,7 @@ const visitorData = `土,170401,52,1
 document.addEventListener("DOMContentLoaded", (event) => {
   const pricePerVisitor = 2710;
   const goldenWeekStarts = {
+    2016: "160502",
     2017: "170501",
     2018: "180430",
     2019: "190429",
@@ -2271,10 +2272,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     return fullRange;
   }
 
-  // Helper function to validate input
-  // function validateInput(inputId, isNumberRequired) {
-  //   const inputElement = document.getElementById(inputId);
-  //   let value = inputElement.value.trim();
   function validateInput(inputId, isNumberRequired, lengthRequired = 0) {
     const inputElement = document.getElementById(inputId);
     let value = inputElement.value.trim();
@@ -2337,8 +2334,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
       .map(Number);
 
     let firstEntryYear = 2000 + (firstYear + 0);
-    // let firstEntryMonth = firstDay; // Here, firstDay is actually the month in this context
-    let firstEntryMonth = firstMonth; // Here, firstDay is actually the month in this context
+    let firstEntryMonth = firstMonth;
 
     console.log(analyzeYear, analyzeMonth);
     console.log(firstEntryYear, firstEntryMonth);

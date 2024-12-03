@@ -61,6 +61,7 @@ button:hover {
 #outputTable {
   margin-top: 20px;
   overflow-x: auto;
+  border-radius: 10px;
 }
 
 table {
@@ -69,7 +70,6 @@ table {
   background-color: rgb(255, 230, 220);
   background-color: rgb(255, 210, 200);
   color: #141c5c;
-  border-radius: 4px;
 }
 
 th,
@@ -85,13 +85,14 @@ th {
 
 /* Styling for the logo at the bottom */
 .bottom-logo {
-  position: fixed;
-  bottom: 0;
+  /* position: fixed; */
+  /* bottom: 0; */
   left: 50%;
-  transform: translateX(-50%);
+  /* transform: translateX(-50%); */
   text-align: center;
-  z-index: -1;
-  margin-bottom: 20px;
+  z-index: 0;
+  margin-top: 35px;
+  margin-bottom: 5px;
 }
 
 .bottom-logo img {

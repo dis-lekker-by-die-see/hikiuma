@@ -2189,7 +2189,6 @@ const visitorData = `土,170401,52,1
 水,230329,0,1
 木,230330,54,1
 金,230331,48,1`;
-
 document.addEventListener("DOMContentLoaded", (event) => {
   const pricePerVisitor = 2710;
   const goldenWeekStarts = {
@@ -2234,44 +2233,296 @@ document.addEventListener("DOMContentLoaded", (event) => {
       });
   };
 
-  const isLeapYear = (year) => {
-    return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-  };
+  function parseYYMMDD(dateStr) {
+    let year = 2000 + parseInt(dateStr.slice(0, 2));
+    let month = parseInt(dateStr.slice(2, 4)) - 1; // Months are 0-based in JS Date
+    let day = parseInt(dateStr.slice(4, 6));
+    return new Date(year, month, day);
+  }
 
-  const calculate52WeekStructure = (row, goldenWeekStarts) => {
-    let startOfGoldenWeek = calculateDate(
-      goldenWeekStarts[row.date.getFullYear()]
-    );
-    let daysSinceGoldenWeek = Math.floor(
-      (row.date - startOfGoldenWeek) / (1000 * 60 * 60 * 24)
-    );
-    let dayOfWeek =
-      (daysSinceGoldenWeek + 7 - startOfGoldenWeek.getDay() + 1) % 7;
-    return [Math.floor(daysSinceGoldenWeek / 7) + 1, dayOfWeek];
-  };
+  // const isLeapYear = (year) => {
+  //   return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+  // };
 
-  function generateFullDateRange(data) {
-    let startDate = data[0].date;
-    let endDate = data[data.length - 1].date;
-    let fullRange = [];
+  // const calculate52WeekStructure = (row, goldenWeekStarts) => {
+  //   let startOfGoldenWeek = calculateDate(
+  //     goldenWeekStarts[row.date.getFullYear()]
+  //   );
+  //   let daysSinceGoldenWeek = Math.floor(
+  //     (row.date - startOfGoldenWeek) / (1000 * 60 * 60 * 24)
+  //   );
+  //   let dayOfWeek =
+  //     (daysSinceGoldenWeek + 7 - startOfGoldenWeek.getDay() + 1) % 7;
+  //   return [Math.floor(daysSinceGoldenWeek / 7) + 1, dayOfWeek];
+  // };
+
+  // function generateFullDateRange(data) {
+  //   let startDate = data[0].date;
+  //   let endDate = data[data.length - 1].date;
+  //   let fullRange = [];
+  //   for (
+  //     let d = new Date(startDate);
+  //     d <= endDate;
+  //     d.setDate(d.getDate() + 1)
+  //   ) {
+  //     let found = data.find((r) => r.date.toDateString() === d.toDateString());
+  //     fullRange.push(
+  //       found || {
+  //         date: new Date(d),
+  //         dow: japaneseDays[d.getDay()],
+  //         visitors: 0,
+  //         isCount: 0,
+  //       }
+  //     );
+  //   }
+  //   return fullRange;
+  // }
+
+  // function generateMainList(goldenWeekStarts) {
+  //   // Extract the Golden Week start dates sorted in order
+  //   let goldenWeekDates = Object.values(goldenWeekStarts)
+  //     .map(calculateDate)
+  //     .sort((a, b) => a - b);
+
+  //   let mainList = [];
+  //   let currentDayNumber = 1;
+
+  //   // Generate dates between the earliest and latest Golden Week dates
+  //   let startDate = goldenWeekDates[0];
+  //   let endDate = goldenWeekDates[goldenWeekDates.length - 1];
+
+  //   for (
+  //     let d = new Date(startDate);
+  //     d <= endDate;
+  //     d.setDate(d.getDate() + 1)
+  //   ) {
+  //     let dateStr = d
+  //       .toLocaleDateString("ja-JP")
+  //       .slice(0, 10)
+  //       .replace(/-/g, "")
+  //       .slice(2);
+  //     let isGoldenWeekStart = goldenWeekDates.some(
+  //       (goldenWeekDate) => goldenWeekDate.toDateString() === d.toDateString()
+  //     );
+
+  //     if (isGoldenWeekStart) {
+  //       currentDayNumber = 1; // Reset dayNumber
+  //     }
+
+  //     mainList.push({
+  //       date: dateStr,
+  //       dayNumber: currentDayNumber,
+  //       dow: japaneseDays[d.getDay()],
+  //       visitors: 0,
+  //       isCount: 0,
+  //     });
+
+  //     currentDayNumber++;
+  //   }
+  //   console.log(mainList);
+  //   return mainList;
+  // }
+  function generateMainList(goldenWeekStarts) {
+    // Extract the Golden Week start dates sorted in order
+    let goldenWeekDates = Object.values(goldenWeekStarts)
+      .map(calculateDate)
+      .sort((a, b) => a - b);
+
+    let mainList = [];
+    let currentDayNumber = 1;
+
+    // Generate dates between the earliest and latest Golden Week dates
+    let startDate = goldenWeekDates[0];
+    let endDate = goldenWeekDates[goldenWeekDates.length - 1];
+
     for (
       let d = new Date(startDate);
       d <= endDate;
       d.setDate(d.getDate() + 1)
     ) {
-      let found = data.find((r) => r.date.toDateString() === d.toDateString());
-      fullRange.push(
-        found || {
-          date: new Date(d),
-          dow: japaneseDays[d.getDay()],
-          visitors: 0,
-          isCount: 0,
-        }
+      // Format date as yymmdd using .toLocaleDateString
+      let dateStr = d
+        .toLocaleDateString("ja-JP", {
+          year: "2-digit",
+          month: "2-digit",
+          day: "2-digit",
+        })
+        .replace(/\//g, ""); // Remove slashes to match yymmdd format
+
+      let isGoldenWeekStart = goldenWeekDates.some(
+        (goldenWeekDate) => goldenWeekDate.toDateString() === d.toDateString()
       );
+
+      if (isGoldenWeekStart) {
+        currentDayNumber = 1; // Reset dayNumber
+      }
+
+      mainList.push({
+        date: dateStr, // yymmdd format
+        dayNumber: currentDayNumber,
+        dow: japaneseDays[d.getDay()],
+        visitors: 0,
+        isCount: 0,
+      });
+
+      currentDayNumber++;
     }
-    return fullRange;
+    // console.log(mainList);
+    return mainList;
   }
 
+  // function generateMainList(goldenWeekStarts) {
+  //   let startDate = calculateDate(
+  //     goldenWeekStarts[Math.min(...Object.keys(goldenWeekStarts))]
+  //   );
+  //   let endDate = calculateDate(
+  //     goldenWeekStarts[Math.max(...Object.keys(goldenWeekStarts))]
+  //   );
+  //   let mainList = [];
+  //   let currentDayNumber = 1;
+
+  //   for (
+  //     let d = new Date(startDate);
+  //     d <= endDate;
+  //     d.setDate(d.getDate() + 1)
+  //   ) {
+  //     let dateStr = d
+  //       .toLocaleDateString("ja-JP")
+  //       .slice(0, 10)
+  //       .replace(/-/g, "")
+  //       .slice(2);
+  //     let isGoldenWeekStart = Object.values(goldenWeekStarts).includes(dateStr);
+
+  //     // Assign day numbers
+  //     if (isGoldenWeekStart) {
+  //       currentDayNumber = 1; // Reset for each new Golden Week start
+  //     }
+  //     mainList.push({
+  //       date: dateStr,
+  //       dayNumber: currentDayNumber,
+  //       dow: japaneseDays[d.getDay()],
+  //       visitors: 0,
+  //       isCount: 0,
+  //     });
+
+  //     currentDayNumber++;
+  //   }
+  //   console.log(mainList);
+  //   return mainList;
+  // }
+
+  // function populateMainList(mainList, data) {
+  //   data.forEach((row) => {
+  //     let listItem = mainList.find(
+  //       (item) =>
+  //         item.date ===
+  //         row.date.toLocaleDateString("ja-JP").slice(2, 10).replace(/-/g, "")
+  //     );
+  //     if (listItem) {
+  //       listItem.visitors = row.visitors || 0;
+  //       listItem.isCount = row.isCount || 0;
+  //     }
+  //   });
+  //   console.log("mainList :", mainList);
+  //   return mainList;
+  // }
+  function populateMainList(mainList, data) {
+    data.forEach((row) => {
+      // Ensure row.date is formatted as yymmdd to match mainList
+      let rowDateStr = row.date
+        .toLocaleDateString("ja-JP", {
+          year: "2-digit",
+          month: "2-digit",
+          day: "2-digit",
+        })
+        .replace(/\//g, ""); // Convert to yymmdd
+
+      // Find matching entry in mainList
+      let listItem = mainList.find((item) => item.date === rowDateStr);
+
+      if (listItem) {
+        listItem.visitors = row.visitors || 0;
+        listItem.isCount = row.isCount || 0;
+      }
+    });
+
+    console.log("Updated mainList:", mainList); // Debugging output
+    return mainList;
+  }
+
+  // let averages = calculateAveragesForMonth(mainList, yearMonth);
+
+  // function calculateAveragesForMonth(mainList, yearMonth) {
+  //   let averages = {};
+  //   let targetMonthDates = mainList.filter((item) =>
+  //     item.date.startsWith(yearMonth)
+  //   );
+
+  //   targetMonthDates.forEach((targetDay) => {
+  //     let matchingDays = mainList.filter(
+  //       (item) =>
+  //         item.dayNumber === targetDay.dayNumber &&
+  //         item.date < targetDay.date &&
+  //         item.isCount === 1
+  //     );
+
+  //     let totalVisitors = matchingDays.reduce(
+  //       (sum, day) => sum + day.visitors,
+  //       0
+  //     );
+  //     let count = matchingDays.length;
+
+  //     averages[targetDay.date] = {
+  //       averageVisitors: count > 0 ? Math.round(totalVisitors / count) : 0,
+  //       totalVisitors: totalVisitors,
+  //       count: count,
+  //     };
+  //   });
+  //   console.log("averages :", averages);
+  //   return averages;
+  // }
+  function calculateAveragesForMonth(mainList, yearMonth) {
+    let averages = {};
+    let targetMonthDates = mainList.filter((item) =>
+      item.date.startsWith(yearMonth)
+    );
+
+    targetMonthDates.forEach((targetDay) => {
+      // Include all matching days regardless of isCount
+      let matchingDays = mainList.filter(
+        (item) =>
+          item.dayNumber === targetDay.dayNumber && item.date < targetDay.date
+      );
+      console.log(matchingDays);
+      // Separate valid counts (isCount === 1) for proper averaging
+      let validDays = matchingDays.filter((day) => day.isCount === 1);
+      console.log(validDays);
+      let totalVisitors = matchingDays.reduce(
+        (sum, day) => sum + day.visitors,
+        0
+      );
+      let validCount = validDays.length;
+      console.log(validCount);
+
+      // Calculate the average based on valid days only
+      let averageVisitors =
+        validCount > 0 ? Math.round(totalVisitors / validCount) : 0;
+
+      averages[targetDay.date] = {
+        averageVisitors: averageVisitors,
+        totalVisitors: totalVisitors,
+        count: validCount,
+      };
+    });
+
+    console.log("Averages:", averages); // Debugging output
+    return averages;
+  }
+
+  // Helper function to validate input
+  // function validateInput(inputId, isNumberRequired) {
+  //   const inputElement = document.getElementById(inputId);
+  //   let value = inputElement.value.trim();
   function validateInput(inputId, isNumberRequired, lengthRequired = 0) {
     const inputElement = document.getElementById(inputId);
     let value = inputElement.value.trim();
@@ -2289,9 +2540,137 @@ document.addEventListener("DOMContentLoaded", (event) => {
     return true;
   }
 
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   function calculate() {
+    // console.log("Calculate function started");
+
+    // let invalidInputs = [];
+
+    // // if (!validateInput("yearMonth", true)) invalidInputs.push("年月");
+    // if (!validateInput("yearMonth", true, 4)) invalidInputs.push("年月");
+    // if (!validateInput("targetSales", true)) invalidInputs.push("目標売上高");
+
+    // let closedDates = document
+    //   .getElementById("closedDates")
+    //   .value.split(",")
+    //   .map(Number);
+    // if (!closedDates.every((date) => !isNaN(date))) {
+    //   document.getElementById("closedDates").value = "";
+    //   invalidInputs.push("営業無い日");
+    // }
+
+    // if (invalidInputs.length > 0) {
+    //   alert(
+    //     `以下の入力が無効です: ${invalidInputs.join(", ")}. 入力してください。`
+    //   );
+    //   // Focus on the first invalid input if closedDates isn't the only invalid one
+    //   if (invalidInputs.length > 1 || invalidInputs[0] !== "営業無い日") {
+    //     document.getElementById("yearMonth").focus();
+    //   } else {
+    //     document.getElementById("closedDates").focus();
+    //   }
+    //   return;
+    // }
+
+    // let yearMonth = document.getElementById("yearMonth").value;
+    // let targetSales = parseInt(document.getElementById("targetSales").value);
+
+    // let analyzeYear = 2000 + parseInt(yearMonth.slice(0, 2));
+    // let analyzeMonth = parseInt(yearMonth.slice(2, 4));
+
+    // // Check if yearMonth is smaller than the first entry
+    // let firstDataEntry = visitorData.trim().split("\n")[0].split(",")[1];
+    // console.log(firstDataEntry);
+    // let [firstYear, firstMonth, firstDay] = firstDataEntry
+    //   .match(/.{2}/g)
+    //   .map(Number);
+
+    // let firstEntryYear = 2000 + (firstYear + 0);
+    // // let firstEntryMonth = firstDay; // Here, firstDay is actually the month in this context
+    // let firstEntryMonth = firstMonth; // Here, firstDay is actually the month in this context
+
+    // console.log(analyzeYear, analyzeMonth);
+    // console.log(firstEntryYear, firstEntryMonth);
+
+    // if (
+    //   analyzeYear < firstEntryYear ||
+    //   (analyzeYear === firstEntryYear && analyzeMonth < firstEntryMonth)
+    // ) {
+    //   invalidInputs.push("年月");
+    //   document.getElementById("yearMonth").value = "";
+    //   document.getElementById("yearMonth").focus();
+    //   return;
+    // }
+
+    // if (!goldenWeekStarts[analyzeYear]) {
+    //   // alert(`Golden Week start date for year ${analyzeYear} is not defined.`);
+    //   document.getElementById("yearMonth").value = "";
+    //   document.getElementById("yearMonth").focus();
+    //   return;
+    // }
+
+    // let data = parseData(visitorData);
+    // let currentYearStart = calculateDate(goldenWeekStarts[analyzeYear]);
+    // let avgVisitors = {};
+
+    // let fullData = generateFullDateRange(data);
+
+    // fullData.forEach((row) => {
+    //   if (row.isCount !== 1) return;
+
+    //   let [week, dayOfWeek] = calculate52WeekStructure(row, goldenWeekStarts);
+    //   let alignedDate = new Date(currentYearStart);
+    //   alignedDate.setDate(alignedDate.getDate() + (week - 1) * 7 + dayOfWeek);
+
+    //   if (
+    //     alignedDate.getFullYear() === analyzeYear &&
+    //     alignedDate.getMonth() + 1 === analyzeMonth
+    //   ) {
+    //     let dateKey = alignedDate.toLocaleDateString("ja-JP").slice(0, 10);
+    //     if (!avgVisitors[dateKey])
+    //       avgVisitors[dateKey] = { totalVisitors: 0, count: 0 };
+    //     avgVisitors[dateKey].totalVisitors += row.visitors;
+    //     avgVisitors[dateKey].count++;
+    //   }
+    // });
+
+    // for (let dateKey in avgVisitors) {
+    //   avgVisitors[dateKey].averageVisitors = Math.round(
+    //     avgVisitors[dateKey].totalVisitors / avgVisitors[dateKey].count
+    //   );
+    // }
+
+    // while (true) {
+    // let totalSales = Object.keys(avgVisitors).reduce((sum, dateStr) => {
+    //   let newVisitors = Math.round(
+    //     avgVisitors[dateStr].averageVisitors * factor
+    //   );
+    //   let date = new Date(dateStr);
+    //   if (closedDates.includes(date.getDate())) newVisitors = 0;
+    //   return sum + newVisitors * pricePerVisitor;
+    // }, 0);
+
+    //   if (totalSales > targetSales) break;
+    //   factor += tolerance;
+    // }
+
     console.log("Calculate function started");
 
+    // let invalidInputs = [];
+
+    // if (!validateInput("yearMonth", true, 4)) invalidInputs.push("年月");
+    // if (!validateInput("targetSales", true)) invalidInputs.push("目標売上高");
+
+    // if (invalidInputs.length > 0) {
+    //   alert(
+    //     `以下の入力が無効です: ${invalidInputs.join(", ")}. 入力してください。`
+    //   );
+    //   return;
+    // }
+
+    // let yearMonth = document.getElementById("yearMonth").value;
+    // let targetSales = parseInt(document.getElementById("targetSales").value);
     let invalidInputs = [];
 
     // if (!validateInput("yearMonth", true)) invalidInputs.push("年月");
@@ -2334,7 +2713,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
       .map(Number);
 
     let firstEntryYear = 2000 + (firstYear + 0);
-    let firstEntryMonth = firstMonth;
+    // let firstEntryMonth = firstDay; // Here, firstDay is actually the month in this context
+    let firstEntryMonth = firstMonth; // Here, firstDay is actually the month in this context
 
     console.log(analyzeYear, analyzeMonth);
     console.log(firstEntryYear, firstEntryMonth);
@@ -2357,63 +2737,196 @@ document.addEventListener("DOMContentLoaded", (event) => {
     }
 
     let data = parseData(visitorData);
-    let currentYearStart = calculateDate(goldenWeekStarts[analyzeYear]);
-    let avgVisitors = {};
+    let mainList = generateMainList(goldenWeekStarts);
+    mainList = populateMainList(mainList, data);
 
-    let fullData = generateFullDateRange(data);
+    let averages = calculateAveragesForMonth(mainList, yearMonth);
 
-    fullData.forEach((row) => {
-      if (row.isCount !== 1) return;
-
-      let [week, dayOfWeek] = calculate52WeekStructure(row, goldenWeekStarts);
-      let alignedDate = new Date(currentYearStart);
-      alignedDate.setDate(alignedDate.getDate() + (week - 1) * 7 + dayOfWeek);
-
-      if (
-        alignedDate.getFullYear() === analyzeYear &&
-        alignedDate.getMonth() + 1 === analyzeMonth
-      ) {
-        let dateKey = alignedDate.toLocaleDateString("ja-JP").slice(0, 10);
-        if (!avgVisitors[dateKey])
-          avgVisitors[dateKey] = { totalVisitors: 0, count: 0 };
-        avgVisitors[dateKey].totalVisitors += row.visitors;
-        avgVisitors[dateKey].count++;
-      }
-    });
-
-    for (let dateKey in avgVisitors) {
-      avgVisitors[dateKey].averageVisitors = Math.round(
-        avgVisitors[dateKey].totalVisitors / avgVisitors[dateKey].count
-      );
-    }
+    // Existing sales calculation logic stays intact
+    let factor = 1;
+    let maxIterations = 10000; // Safety limit
+    let iterationCount = 0;
 
     while (true) {
-      let totalSales = Object.keys(avgVisitors).reduce((sum, dateStr) => {
+      let totalSales = Object.keys(averages).reduce((sum, dateStr) => {
         let newVisitors = Math.round(
-          avgVisitors[dateStr].averageVisitors * factor
+          averages[dateStr].averageVisitors * factor
         );
+        // console.log("newVisitors: ", newVisitors);
         let date = new Date(dateStr);
+        // console.log("date = new Date(dateStr) :", date);
         if (closedDates.includes(date.getDate())) newVisitors = 0;
+        // console.log(
+        //   "sum + newVisitors * pricePerVisitor :",
+        //   sum + newVisitors * pricePerVisitor
+        // );
         return sum + newVisitors * pricePerVisitor;
       }, 0);
-
+      // console.log("totalSales :", totalSales);
       if (totalSales > targetSales) break;
+
       factor += tolerance;
+      iterationCount++;
+      // console.log("Factor: ", factor, " Iteration: ", iterationCount);
+
+      if (iterationCount >= maxIterations) {
+        alert("Could not achieve the target sales with the given data.");
+        break;
+      }
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //     let tableContent = `<table><tr><th>曜日</th><th>年月日</th><th>平均 (過去)</th><th>平均 (計画)</th><th>売上目標高</th></tr>`;
+    //     let totals = { pastVisitors: 0, pastSales: 0, newVisitors: 0, newSales: 0 };
+
+    //     for (let dateStr in avgVisitors) {
+    //       let row = avgVisitors[dateStr];
+    //       let date = new Date(dateStr);
+    //       let formattedDate = date
+    //         .toLocaleDateString("ja-JP", {
+    //           year: "2-digit",
+    //           month: "2-digit",
+    //           day: "2-digit",
+    //         })
+    //         .replace(/\//g, "");
+    //       let pastVisitors = row.averageVisitors;
+
+    //       let newVisitors = closedDates.includes(date.getDate())
+    //         ? 0
+    //         : Math.round(row.averageVisitors * factor);
+    //       let newSales = newVisitors * pricePerVisitor;
+
+    //       totals.pastVisitors += pastVisitors;
+    //       totals.newVisitors += newVisitors;
+    //       totals.newSales += newSales;
+
+    //       tableContent += `<tr>
+    //                     <td>${japaneseDays[date.getDay()]}</td>
+    //                     <td>${formattedDate}</td>
+    //                     <td>${pastVisitors}</td>
+    //                     <td>${newVisitors}</td>
+    //                     <td>¥${newSales.toLocaleString()}</td>
+    //                 </tr>`;
+    //     }
+
+    //     tableContent += `<tr><td>合計</td><td></td>
+    //                 <td>${totals.pastVisitors}</td>
+    //                 <td>${totals.newVisitors}</td>
+    //                 <td>¥${totals.newSales.toLocaleString()}</td></tr></table>`;
+
+    //     document.getElementById("outputTable").innerHTML = tableContent;
+    //     document
+    //       .getElementById("generateCsv")
+    //       .addEventListener("click", function () {
+    //         downloadCSV(avgVisitors, closedDates);
+    //       });
+    //   }
+
+    //   function downloadCSV(avgVisitors, closedDates) {
+    //     let csvContent = "\uFEFF"; // UTF-8 BOM
+    //     csvContent += "曜日,年月日,平均 (過去),平均 (計画),売上目標高\n";
+    //     let totals = { pastVisitors: 0, newVisitors: 0, newSales: 0 };
+
+    //     for (let dateStr in avgVisitors) {
+    //       let row = avgVisitors[dateStr];
+    //       let date = new Date(dateStr);
+    //       let formattedDate = date
+    //         .toLocaleDateString("ja-JP", {
+    //           year: "2-digit",
+    //           month: "2-digit",
+    //           day: "2-digit",
+    //         })
+    //         .replace(/\//g, "");
+    //       let pastVisitors = row.averageVisitors;
+    //       let newVisitors = closedDates.includes(date.getDate())
+    //         ? 0
+    //         : Math.round(row.averageVisitors * factor);
+    //       let newSales = newVisitors * pricePerVisitor;
+
+    //       totals.pastVisitors += pastVisitors;
+    //       totals.newVisitors += newVisitors;
+    //       totals.newSales += newSales;
+
+    //       csvContent += `"${
+    //         japaneseDays[date.getDay()]
+    //       }",${formattedDate},${pastVisitors},${newVisitors},${newSales}\n`;
+    //     }
+
+    //     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    //     const url = URL.createObjectURL(blob);
+
+    //     const link = document.createElement("a");
+    //     link.href = url;
+    //     link.download = "引き馬計画.csv";
+    //     link.style.visibility = "hidden";
+    //     document.body.appendChild(link);
+    //     link.click();
+    //     URL.revokeObjectURL(url);
+    //     document.body.removeChild(link);
+    //   }
+
+    //   // Add input event listeners for immediate validation feedback
+    //   document.getElementById("yearMonth").addEventListener("input", function () {
+    //     validateInput("yearMonth", true);
+    //   });
+    //   document.getElementById("targetSales").addEventListener("input", function () {
+    //     validateInput("targetSales", true);
+    //   });
+    //   document.getElementById("closedDates").addEventListener("input", function () {
+    //     validateInput("closedDates", false);
+    //   });
+    //   document.getElementById("calculate").addEventListener("click", calculate);
+    // });
+
+    // let tableContent = `<table><tr><th>曜日</th><th>年月日</th><th>平均 (過去)</th><th>平均 (計画)</th><th>売上目標高</th></tr>`;
+    // let totals = { pastVisitors: 0, pastSales: 0, newVisitors: 0, newSales: 0 };
+
+    // for (let dateStr in averages) {
+    //   let row = averages[dateStr];
+    //   let date = new Date(dateStr);
+    //   // let formattedDate = date
+    //   //   .toLocaleDateString("ja-JP", {
+    //   //     year: "2-digit",
+    //   //     month: "2-digit",
+    //   //     day: "2-digit",
+    //   //   })
+    //   //   .replace(/\//g, "");
+    //   let pastVisitors = row.averageVisitors;
+
+    //   let newVisitors = closedDates.includes(date.getDate())
+    //     ? 0
+    //     : Math.round(row.averageVisitors * factor);
+    //   let newSales = newVisitors * pricePerVisitor;
+
+    //   totals.pastVisitors += pastVisitors;
+    //   totals.newVisitors += newVisitors;
+    //   totals.newSales += newSales;
+
+    //   //<td>${formattedDate}</td>
+    //   tableContent += `<tr>
+    //                 <td>${japaneseDays[date.getDay()]}</td>
+    //                 <td>${date}</td>
+    //                 <td>${pastVisitors}</td>
+    //                 <td>${newVisitors}</td>
+    //                 <td>¥${newSales.toLocaleString()}</td>
+    //             </tr>`;
+    // }
 
     let tableContent = `<table><tr><th>曜日</th><th>年月日</th><th>平均 (過去)</th><th>平均 (計画)</th><th>売上目標高</th></tr>`;
     let totals = { pastVisitors: 0, pastSales: 0, newVisitors: 0, newSales: 0 };
 
-    for (let dateStr in avgVisitors) {
-      let row = avgVisitors[dateStr];
-      let date = new Date(dateStr);
+    for (let dateStr in averages) {
+      let row = averages[dateStr];
+      let date = parseYYMMDD(dateStr); // Use the parsing function
+
       let formattedDate = date
         .toLocaleDateString("ja-JP", {
           year: "2-digit",
           month: "2-digit",
           day: "2-digit",
         })
-        .replace(/\//g, "");
+        .replace(/\//g, ""); // Ensure the date matches the expected format
+
       let pastVisitors = row.averageVisitors;
 
       let newVisitors = closedDates.includes(date.getDate())
@@ -2426,12 +2939,12 @@ document.addEventListener("DOMContentLoaded", (event) => {
       totals.newSales += newSales;
 
       tableContent += `<tr>
-                    <td>${japaneseDays[date.getDay()]}</td>
-                    <td>${formattedDate}</td>
-                    <td>${pastVisitors}</td>
-                    <td>${newVisitors}</td>
-                    <td>¥${newSales.toLocaleString()}</td>
-                </tr>`;
+                      <td>${japaneseDays[date.getDay()]}</td>
+                      <td>${formattedDate}</td>
+                      <td>${pastVisitors}</td>
+                      <td>${newVisitors}</td>
+                      <td>¥${newSales.toLocaleString()}</td>
+                  </tr>`;
     }
 
     tableContent += `<tr><td>合計</td><td></td>
@@ -2443,25 +2956,68 @@ document.addEventListener("DOMContentLoaded", (event) => {
     document
       .getElementById("generateCsv")
       .addEventListener("click", function () {
-        downloadCSV(avgVisitors, closedDates);
+        downloadCSV(averages, closedDates);
       });
   }
 
-  function downloadCSV(avgVisitors, closedDates) {
-    let csvContent = "\uFEFF"; // UTF-8 BOM
+  // function downloadCSV(averages, closedDates) {
+  //   let csvContent = "\uFEFF"; // UTF-8 BOM
+  //   csvContent += "曜日,年月日,平均 (過去),平均 (計画),売上目標高\n";
+  //   let totals = { pastVisitors: 0, newVisitors: 0, newSales: 0 };
+
+  //   for (let dateStr in averages) {
+  //     let row = averages[dateStr];
+  //     let date = new Date(dateStr);
+  //     let formattedDate = date
+  //       .toLocaleDateString("ja-JP", {
+  //         year: "2-digit",
+  //         month: "2-digit",
+  //         day: "2-digit",
+  //       })
+  //       .replace(/\//g, "");
+  //     let pastVisitors = row.averageVisitors;
+  //     let newVisitors = closedDates.includes(date.getDate())
+  //       ? 0
+  //       : Math.round(row.averageVisitors * factor);
+  //     let newSales = newVisitors * pricePerVisitor;
+
+  //     totals.pastVisitors += pastVisitors;
+  //     totals.newVisitors += newVisitors;
+  //     totals.newSales += newSales;
+
+  //     csvContent += `"${
+  //       japaneseDays[date.getDay()]
+  //     }",${formattedDate},${pastVisitors},${newVisitors},${newSales}\n`;
+  //   }
+
+  //   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  //   const url = URL.createObjectURL(blob);
+
+  //   const link = document.createElement("a");
+  //   link.href = url;
+  //   link.download = "引き馬計画.csv";
+  //   link.style.visibility = "hidden";
+  //   document.body.appendChild(link);
+  //   link.click();
+  //   URL.revokeObjectURL(url);
+  //   document.body.removeChild(link);
+  // }
+  function downloadCSV(averages, closedDates) {
+    let csvContent = "\uFEFF"; // UTF-8 BOM for proper encoding
     csvContent += "曜日,年月日,平均 (過去),平均 (計画),売上目標高\n";
     let totals = { pastVisitors: 0, newVisitors: 0, newSales: 0 };
 
-    for (let dateStr in avgVisitors) {
-      let row = avgVisitors[dateStr];
-      let date = new Date(dateStr);
+    for (let dateStr in averages) {
+      let row = averages[dateStr];
+      let date = parseYYMMDD(dateStr); // Ensure consistent date parsing
       let formattedDate = date
         .toLocaleDateString("ja-JP", {
           year: "2-digit",
           month: "2-digit",
           day: "2-digit",
         })
-        .replace(/\//g, "");
+        .replace(/\//g, ""); // Match the yymmdd format used in the table
+
       let pastVisitors = row.averageVisitors;
       let newVisitors = closedDates.includes(date.getDate())
         ? 0
@@ -2476,6 +3032,10 @@ document.addEventListener("DOMContentLoaded", (event) => {
         japaneseDays[date.getDay()]
       }",${formattedDate},${pastVisitors},${newVisitors},${newSales}\n`;
     }
+
+    csvContent += `"合計",,"${totals.pastVisitors}","${
+      totals.newVisitors
+    }","¥${totals.newSales.toLocaleString()}"\n`;
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);

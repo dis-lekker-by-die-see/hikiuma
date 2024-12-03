@@ -2210,7 +2210,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   };
   const japaneseDays = ["日", "月", "火", "水", "木", "金", "土"];
 
-  let factor = 1;
   const tolerance = 0.005;
 
   const calculateDate = (dateStr) => {
@@ -2371,6 +2370,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   function calculate() {
+    let factor = 1;
     // console.log("Calculate function started");
 
     let invalidInputs = [];
@@ -2433,7 +2433,12 @@ document.addEventListener("DOMContentLoaded", (event) => {
       document.getElementById("yearMonth").focus();
       return;
     }
-
+    if (analyzeMonth < 1 || analyzeMonth > 12) {
+      invalidInputs.push("年月");
+      document.getElementById("yearMonth").value = "";
+      document.getElementById("yearMonth").focus();
+      return;
+    }
     if (!goldenWeekStarts[analyzeYear]) {
       document.getElementById("yearMonth").value = "";
       document.getElementById("yearMonth").focus();
@@ -2457,7 +2462,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     let averages = calculateAveragesForMonth(mainList, yearMonth);
 
     // Existing sales calculation logic stays intact
-    // let factor = 1;
     let maxIterations = 10000; // Safety limit
     let iterationCount = 0;
 
@@ -2514,20 +2518,33 @@ document.addEventListener("DOMContentLoaded", (event) => {
                   </tr>`;
     }
 
-    tableContent += `<tr><td>合計</td><td></td>
-                <td>${totals.pastVisitors}</td>
-                <td>${totals.newVisitors}</td>
-                <td>¥${totals.newSales.toLocaleString()}</td></tr></table>`;
+    // tableContent += `<tr><td>合計</td><td></td>
+    //             <td>${totals.pastVisitors}</td>
+    //             <td>${totals.newVisitors}</td>
+    //             <td>¥${totals.newSales.toLocaleString()}</td></tr></table>`;
+    // font-weight: bold; font-size: 1.1em;
+    tableContent += `<tr style="background-color: #ffa34d; font-weight: bold;">
+                    <td>合計</td>
+                    <td></td>
+                    <td>${totals.pastVisitors}</td>
+                    <td>${totals.newVisitors}</td>
+                    <td>¥${totals.newSales.toLocaleString()}</td>
+                </tr></table>`;
 
     document.getElementById("outputTable").innerHTML = tableContent;
-    document
-      .getElementById("generateCsv")
-      .addEventListener("click", function () {
-        downloadCSV(averages, closedDates);
-      });
+
+    // Remove any existing event listeners on the generateCsv button
+    const generateCsvButton = document.getElementById("generateCsv");
+    const newButton = generateCsvButton.cloneNode(true);
+    generateCsvButton.parentNode.replaceChild(newButton, generateCsvButton);
+
+    // Attach a new event listener
+    newButton.addEventListener("click", function () {
+      downloadCSV(averages, closedDates, factor);
+    });
   }
 
-  function downloadCSV(averages, closedDates) {
+  function downloadCSV(averages, closedDates, factor) {
     let csvContent = "\uFEFF"; // UTF-8 BOM for proper encoding
     csvContent += "曜日,年月日,平均 (過去),平均 (計画),売上目標高\n";
     let totals = { pastVisitors: 0, newVisitors: 0, newSales: 0 };
